@@ -7,8 +7,8 @@
 #define utils
 #endif
 
-#define HEADERFILE  "header.dat"
-#define PATHFILE  "register.dat"
+#define HEADERFILE  "../data/header.dat"
+#define PATHFILE  "../data/register.dat"
 #define MAXSTRINGLEN 32
 
 void BuildFields();
@@ -17,14 +17,56 @@ void InsertRegisters();
 void InsertRegister(Header* header, Node* values);
 int IsPositiveResponse(char* response);
 void SelectAll();
+void Menu();
 
 int main(void){
 	
-	if(GetFileSize(HEADERFILE) == 0)
-		BuildFields();
+	Menu();
+}
 
-	//InsertRegisters();
-	SelectAll();
+void Menu(){
+
+	int header_size = GetFileSize(HEADERFILE);
+	if(header_size == 0){
+		printf("Não foi encontrado nenhum arquivo base.\n");
+		printf("Deseja criar uma nova base de dados ?(S/N): ");
+		char* input = NewString(1);
+		scanf("%s", input);
+		if(IsPositiveResponse(input) == 0){
+			printf("Processo finalizado!\n");
+			return;
+		}
+
+		BuildFields();
+	}
+
+	printf("Insira o comando relativo ao quê deseja executar..\n");
+	printf("[\"insert\", \"selectall\", \"exit\"]\n");
+
+	while(1){
+
+		printf(">");
+
+		char insertCommand[6] = {'i','n','s','e','r','t'};
+		char selectAllCommand[9] = {'s','e','l','e','c','t','a','l','l'};
+		char exit[4] = {'e', 'x', 'i', 't'};
+
+		char* input = NewString(MAXSTRINGLEN);
+
+		scanf("%s", input);
+		
+		if(strcmp(input, insertCommand) == 0)
+			InsertRegisters();
+
+		else if(strcmp(input, selectAllCommand) == 0)
+			SelectAll();
+
+		else if(strcmp(input, exit) == 0)
+			return;
+
+		else 
+			printf("O comando não existe.\n");
+	}
 }
 
 void BuildFields(){
@@ -144,7 +186,8 @@ void InsertRegister(Header* header, Node* values){
 	Node* header_cursor = header->fields;
 
 	while(header_cursor->next != NULL){
-		printf("Entre com o valor do campo \"%s\": ", header_cursor->value);
+		char* field = header_cursor->value;
+		printf("Entre com o valor do campo \"%s\": ", field);
 		char* value = NewString(MAXSTRINGLEN);
 		scanf("%s", value);
 		Push(values, value);
@@ -158,7 +201,7 @@ void SelectAll(){
 
 	Node* header_cursor = header->fields;
 	while(header_cursor->next != NULL){
-		int length = GetCharSize(header_cursor->value);
+		int length = header_cursor->length;
 		PrintField(header_cursor->value,length);
 		header_cursor = header_cursor->next;
 	}
